@@ -1,0 +1,5 @@
+Id: 151515
+Semestre: 1
+Promedio Ponderado: 15.0
+Nombre: Julio
+Apellido: Hurtado
