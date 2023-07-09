@@ -1,0 +1,7 @@
+Cursos  Creditaje
+Comunicacion 3
+Estructuras_Discretas 4
+Introduccion_Vida_Universitaria 3
+Matematica_I 5
+Metodologia_del_Estudio 3
+Programacion_de_Video_Juegos 4
