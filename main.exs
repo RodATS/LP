@@ -1,11 +1,10 @@
 
-    # Recorrer
-    #lista_cursos = ["Curso1", "Curso2", "Curso3", "Curso4", "Curso5", "Curso6"]
-    #IO.inspect(datos_alma)
+    
 #------------------------------------------------------------------------
 defmodule FileReader do
-  @lista_cursos ["Comunicacion", "Estructuras Discretas I", "Introduccion a la Vida Universitaria", "Matematica I","Metodologia del Estudio","Programacion de Video Juegos", "Apreciacion Musical","Ciencia de la Computacion I"]
   
+
+  #----------para leer los txt normales------------
   def read_and_print_file(file_path) do
     case File.read(file_path) do
       {:ok, content} ->
@@ -77,6 +76,70 @@ defmodule FileReader do
     end)
   end
 
+#------------------END ---- Avance Curricular ------------------------------------
+
+#------------- colocarle un ID a los cursos para escoger la matricula
+def identificacion_Cursos(cursos_EnOrden) do
+  # cursos = ["Programacion de videojuegos", "2", "Matematica", "3"]
+  
+ # cursos_EnOrden = Enum.reverse(cursos)
+   Enum.each(Enum.with_index(cursos_EnOrden), fn {value, index} ->
+    if rem(index,2) == 0 do
+      IO.puts("id: #{div(index,2)} - : #{value}")
+    else
+      IO.puts("Creditos: #{value}")
+    end
+    
+  end)
+end
+#----------------END--colocar ID
+
+
+#----------------------Agregar cursos a matricula---------------
+def matricula(cursos,matricula_actual \\ [], contador \\ 0) do
+
+IO.puts("----------PROCESO DE MATRICULA------------")
+# cursos = ["Programacion de videojuegos", "2", "Matematica", "3"]
+IO.puts("\e[H\e[2J")
+IO.puts("Creditos disponibles: #{22-contador}  ----")
+IO.puts("Cursos agregados por el momento")
+IO.inspect(Enum.reverse(matricula_actual))
+
+IO.puts("----------------------------------------------------")
+IO.puts("Cursos disponibles")
+identificacion_Cursos(cursos)
+
+IO.puts("----------------------------------------------------")
+IO.puts("Ingresar el numero del curso que se quiere agregar (-1 para finalizar el proceso:")
+
+input = IO.gets("") |> String.trim() |> String.to_integer()
+if(input < (length(cursos))/2) do
+creditoSeleccionado=String.to_integer(Enum.at(cursos,input*2+1))
+  if(input==-1) do
+    IO.puts("Finalizando matricula")
+    IO.puts("-----Los cursos seleccionados son:-----")
+    IO.inspect(Enum.reverse(matricula_actual))
+  else
+    if(22-contador - creditoSeleccionado >= 0) do
+      cursoSeleccionado=Enum.at(cursos,input*2) 
+      delete1=Enum.at(cursos,input*2)
+      delete2=input*2
+      cursos=List.delete(cursos,delete1)
+      cursos=List.delete_at(cursos,delete2)
+      matricula(cursos,[cursoSeleccionado|matricula_actual],contador+creditoSeleccionado)
+    else
+      IO.puts("Se han agotado los creditos disponibles")
+      IO.puts("----Los cursos seleccionados son:----")
+      IO.inspect(Enum.reverse(matricula_actual))
+      #nou, creoq ue defrente imprima tus cursos son: y te mande al menu
+    end
+  end
+else
+IO.puts("Esa no es una opcion valida")
+matricula(cursos,matricula_actual,contador)
+end
+end
+#----------------------END--Matricula-----------------------------
 
 #--------------------------------- CursosEq --------------------------
   def read_and_process_file_cursos(file_path) do
@@ -89,14 +152,14 @@ defmodule FileReader do
     
     semestre=Enum.at(datos_datos,1)
     semestreActual = String.to_integer(String.at(semestre,String.length(semestre)-1))
-    IO.puts(semestreActual)
-    IO.puts("-------Semestre arriba----")
+    #IO.puts(semestreActual)
+    #IO.puts("-------Semestre arriba----")
 
     indices_Semestres_actuales = :lists.seq(semestreActual, rem(semestreActual+3,11), 1)
     #---------------------seesmtre del alumno-FIN-------------
 
 
-    #----------filtrar cursos llevado---------
+  #---------------filtrar cursos llevado---------
     
     datos_CursosLlevados = File.stream!("AvanceCurricular.txt") |> Stream.map(&String.trim/1) |>Enum.into([])
 
@@ -115,11 +178,10 @@ defmodule FileReader do
   end
 end)
     #IO.inspect(lista_CursosAprobados)
-    #-----------filtrar cursos llevados-FIN------------------
+  #-----------filtrar cursos llevados-FIN------------------
 
-
-
-    
+  #-----------recorrer el CursoEq y filtrarla-------
+  
     #longitud del array datos_alma
     longitud = length(datos_alma)
 
@@ -139,30 +201,77 @@ end)
     indicesPreRequisitos = :lists.seq(3,longitud-1,4) 
     lista_indicesPreRequisitos = Enum.map(indicesPreRequisitos, &(&1))
 
-    #-------------recorrer el CursoEq
-    Enum.each(Enum.with_index(datos_alma), fn {value, index} ->
-        #nombre del curso
-          if not(value in lista_CursosAprobados) && index in lista_nombresCursos && String.to_integer(Enum.at(datos_alma, index-1)) in  indices_Semestres_actuales do
-            valor = (Enum.at(datos_alma, index))
-            IO.puts(valor)
-  
-          else
-            if not(Enum.at(datos_alma, index+1) in lista_CursosAprobados) && index in lista_indicesSemestre && String.to_integer(Enum.at(datos_alma, index)) in indices_Semestres_actuales do
-              IO.puts("Semestre: #{value}")
-              
-            else
-              if not(Enum.at(datos_alma, index-1) in lista_CursosAprobados) && index in lista_indicesCred && String.to_integer(Enum.at(datos_alma, index-2)) in indices_Semestres_actuales do
-                IO.puts("Creditos: #{value}")
-              else
-                if not(Enum.at(datos_alma, index-2) in lista_CursosAprobados) && index in indicesPreRequisitos && String.to_integer(Enum.at(datos_alma, index-3)) in indices_Semestres_actuales do
-                  IO.puts("Pre-requisitos: #{value}")
-                
+#IO.inspect(lista_CursosAprobados)
+
+
+#Hallando que cursos se pueden llevar, debido a que cumple con los pre-requisitos y agregarlo a una lista----------------------------
+    nuevaListaIndices = Enum.reduce(Enum.with_index(datos_alma), [], fn {value, index}, lista_Acumulada1 ->
+  preRequisitos=String.split(value,",")
+  if index in lista_indicesPreRequisitos && String.to_integer(List.first(preRequisitos))!=-1  do
+  #IO.puts( Enum.at(datos_alma, String.to_integer(List.first(preRequisitos))))
+    if length(preRequisitos)==1 && Enum.at(datos_alma, String.to_integer(List.first(preRequisitos))) in lista_CursosAprobados do
+      [Enum.at(datos_alma, index-2) |lista_Acumulada1  ]
+      #IO.puts(Enum.at(datos_alma, index-2))
+    else
+      if Enum.at(datos_alma, String.to_integer(List.first(preRequisitos))) in lista_CursosAprobados && Enum.at(datos_alma, String.to_integer(List.last(preRequisitos))) in lista_CursosAprobados do
+      [Enum.at(datos_alma, index-2) |lista_Acumulada1  ]
+      else
+       lista_Acumulada1
+      end
+    end
+  else
+    lista_Acumulada1
+  end
+end)
+
+    #-------------recorrer el CursoEq---y agregarlo a una lista para pasar a las matriculas-----------
+    #Enum.each
+    lista_CursosDisponibles =  Enum.reduce(Enum.with_index(datos_alma), [], fn {value, index}, lista_agregarDatos ->
+
+      #--------guardar el nombre del curso
+      if not(value in lista_CursosAprobados) && index in lista_nombresCursos && String.to_integer(Enum.at(datos_alma, index-1)) in indices_Semestres_actuales && (Enum.at(datos_alma, index+2)=="-1" || value in nuevaListaIndices) do
+          valor = Enum.at(datos_alma, index)
+          IO.puts(valor)
+          [valor | lista_agregarDatos]
+
+          #--------------guardar el semestre---------------
+        else if not(Enum.at(datos_alma, index+1) in lista_CursosAprobados) && index in lista_indicesSemestre && String.to_integer(Enum.at(datos_alma, index)) in indices_Semestres_actuales && (Enum.at(datos_alma, index+3)=="-1" || Enum.at(datos_alma, index+1) in nuevaListaIndices) do
+            IO.puts("Semestre: #{value}")
+            lista_agregarDatos
+
+          #----guardar la lista de creditos del curso
+          else if not(Enum.at(datos_alma, index-1) in lista_CursosAprobados) && index in lista_indicesCred && String.to_integer(Enum.at(datos_alma, index-2)) in indices_Semestres_actuales && (Enum.at(datos_alma, index+1)=="-1" || Enum.at(datos_alma, index-1) in nuevaListaIndices) do
+              IO.puts("Creditos: #{value}")
+              [value | lista_agregarDatos]
+
+            #------saber que cursos son pre-requisito-----------
+            else if not(Enum.at(datos_alma, index-2) in lista_CursosAprobados) && index in indicesPreRequisitos && String.to_integer(Enum.at(datos_alma, index-3)) in indices_Semestres_actuales && (Enum.at(datos_alma, index)=="-1" || Enum.at(datos_alma, index-2) in nuevaListaIndices) do
+                preRequisitos = String.split(value, ",")
+                if length(preRequisitos) == 1 do
+                  if List.first(preRequisitos) == "-1" do
+                    IO.puts("Pre-requisitos: #{value}")
+                  else
+                    IO.puts("Pre-requisitos: #{Enum.at(datos_alma, String.to_integer(List.first(preRequisitos)))}")
+                  end
+                else
+                  IO.puts("Pre-requisitos: #{Enum.at(datos_alma, String.to_integer(List.first(preRequisitos)))}, #{Enum.at(datos_alma, String.to_integer(List.last(preRequisitos)))}")
                 end
+                lista_agregarDatos
+              else
+                lista_agregarDatos
               end
-            end
           end
-        
+        end #end del semestre
+      end #end nombre del curso
     end)
+
+
+
+    #Agregacion de cursos a matricula
+
+    #IO.puts("-------------PROCESO DE MATRICULA----")
+    #IO.inspect(lista_CursosDisponibles)
+    matricula(Enum.reverse(lista_CursosDisponibles))
   end
 end
 
@@ -179,10 +288,10 @@ end
   # end
 
 
-#----------------------NUESTROS MENUS----------------------------
+#--------------------------NUESTROS MENUS----------------------------
 defmodule Menu do
   def iniciar_sesion do
-    IO.puts("___PORTAL ACADEMICO___")
+    IO.puts("_______PORTAL ACADEMICO________")
     IO.puts("1. Iniciar sesión:")
     IO.puts("2. Salir")
     read_option()
@@ -212,7 +321,7 @@ defmodule Menu do
   end
 
   def display_menu do
-    IO.puts("\n-----------MENU---------")
+    IO.puts("\n--------------MENU------------")
     IO.puts("1. Ingresar a los cursos correspondientes")
     IO.puts("2. Ver tus datos")
     IO.puts("3. Notas semestre actual")
@@ -261,6 +370,3 @@ end
 
 Menu.iniciar_sesion()
 
-#_cursos_lista = FileReader.read_cursos("CursoEq.txt")
-
-#Enum.each(cursos_lista, fn(x) -> IO.puts(x) end)
